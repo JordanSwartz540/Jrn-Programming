@@ -1,0 +1,247 @@
+import turtle
+import random
+import time
+score = 0
+health = 5
+kills = 0
+
+wn = turtle.Screen()
+wn.bgcolor("black")
+wn.title("Shooter")
+wn.setup(700,700)
+wn.tracer(0)
+
+pen = turtle.Turtle()
+pen.color("white")
+pen.speed(0)
+pen.penup()
+pen.setpos(-300,-300)
+pen.pendown()
+for _ in range(4):
+    pen.fd(600)
+    pen.lt(90)
+pen.ht()
+
+score_pen = turtle.Turtle()
+score_pen.ht()
+score_pen.penup()
+score_pen.speed(0)
+score_pen.color("white")
+score_pen.goto(-280,299)
+score_pen.write("Score: {}  Health: {}  Kills: {}".format(score,health,kills),align="left",font=("ink free",30,"bold"))
+
+deadline = turtle.Turtle()
+deadline.ht()
+deadline.penup()
+deadline.speed(0)
+deadline.color("red")
+deadline.goto(-200,250)
+deadline.write("Get a score of 100",align="left",font=("Arial",25,"bold"))
+
+
+
+player = turtle.Turtle()
+player.color("blue")
+player.shape("triangle")
+player.penup()
+player.speed(0)
+player.setposition(0,-250)
+player.shapesize(stretch_len=1.2,stretch_wid=0.9)
+player.setheading(90)
+
+playerspeed = 2
+
+bullet = turtle.Turtle()
+bullet.color("yellow")
+bullet.shape("triangle")
+bullet.penup()
+bullet.speed(0)
+bullet.setposition(player.xcor(),player.ycor())
+bullet.shapesize(stretch_len=0.3,stretch_wid=0.2)
+bullet.ht()
+
+bulletspeed = 20
+bulletstate = "ready"
+
+enemies = []
+
+for _ in range(8):
+    enemy = turtle.Turtle()
+    enemy.color("red")
+    enemy.shape("circle")
+    enemy.penup()
+    enemy.speed(0)
+    x = random.randrange(-250,250,5)
+    y = random.randrange(-250,250,5)
+    enemy.setposition(x,y)
+    enemies.append(enemy)
+
+allies = []
+
+for _ in range(8):
+    ally = turtle.Turtle()
+    ally.color("blue")
+    ally.shape("square")
+    ally.penup()
+    ally.speed(0)
+    x = random.randrange(-250,250,5)
+    y = random.randrange(-250,250,5)
+    ally.setposition(x,y)
+    allies.append(ally)
+
+
+def main():
+    global enemies,playerspeed,allies,health, run,score,kills
+    player.fd(playerspeed)
+    if enemies == None:
+        quit()
+
+    if player.xcor() > 300 or player.ycor() > 300 or player.xcor() < -300 or player.ycor() < -300:
+        player.rt(90)
+
+
+    # Enemies
+    for enemy in enemies:
+        speed = random.randint(1,5)
+        enemy.fd(speed)
+        if enemy.xcor() >= 290:
+            enemy.setx(290)
+            enemy.rt(random.randint(0, 90))
+
+
+        if enemy.xcor() <= -290:
+            enemy.setx(-290)
+            enemy.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            enemy.fd(speed)
+
+
+        if enemy.ycor() >= 290:
+            enemy.sety(290)
+            enemy.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            enemy.fd(speed)
+
+        if enemy.ycor() <= -290:
+            enemy.sety(-290)
+            enemy.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            enemy.fd(speed)
+
+        if player.distance(enemy) < 20:
+            enemy.rt(90)
+            enemy.fd(1)
+            player.lt(90)
+            player.fd(1)
+            speed = random.randint(1,3)
+            enemy.fd(speed)
+
+            health -= 1
+            score_pen.clear()
+            score_pen.write("Score: {}  Health: {}  Kills: {}".format(score, health, kills), align="left",
+                            font=("ink free", 30, "bold"))
+
+    for ally in allies:
+        speed = random.randint(1,3)
+        ally.fd(speed)
+        if ally.xcor() >= 290:
+            ally.setx(290)
+            ally.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            ally.fd(speed)
+
+        if ally.xcor() <= -290:
+            ally.setx(-290)
+            ally.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            ally.fd(speed)
+
+        if ally.ycor() >= 290:
+            ally.sety(290)
+            ally.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            ally.fd(speed)
+
+        if ally.ycor() <= -290:
+            ally.sety(-290)
+            ally.rt(random.randint(0, 90))
+            speed = random.randint(1,3)
+            ally.fd(speed)
+    if score >= 100:
+        quit()
+        
+    if health <= 0:
+        score = 0
+        kills = 0
+        health = 5
+        run = False
+        time.sleep(3)
+        run = True
+
+
+def left():
+    player.lt(40)
+
+def right():
+    player.rt(40)
+
+def acc():
+    global playerspeed
+    playerspeed += 0.1
+
+def decc():
+    global playerspeed
+    playerspeed -= 0.1
+
+
+def fire():
+    global bulletstate
+    if bulletstate == "ready":
+        bullet.setheading(player.heading())
+        bullet.st()
+        bullet.goto(player.xcor(), player.ycor())
+        bulletstate = "fire"
+
+
+def move():
+    global bulletspeed,bulletstate,enemies,score,kills
+    if bulletstate == "fire":
+        bullet.fd(bulletspeed)
+        if bullet.xcor() < -290 or bullet.xcor() > 290 or bullet.ycor() < -290 or bullet.ycor() > 290:
+            bulletstate = "ready"
+            bullet.ht()
+
+        for enemy in enemies:
+            if bullet.distance(enemy) < 20:
+                x = random.randint(-290,290)
+                y = random.randint(-290,290)
+                enemy.goto(x,y)
+                score += 10
+                kills += 1
+                score_pen.clear()
+                score_pen.write("Score: {}  Health: {}  Kills: {}".format(score, health, kills), align="left",
+                                font=("ink free", 30, "bold"))
+
+
+wn.listen()
+wn.onkeypress(left,"a")
+wn.onkeypress(right,"d")
+wn.onkeypress(acc,"w")
+wn.onkeypress(decc,"s")
+wn.onkeypress(fire,"space")
+
+
+
+run = True
+while run == True:
+    wn.update()
+    move()
+    main()
+
+
+
+
+
+
+
+wn.mainloop()
